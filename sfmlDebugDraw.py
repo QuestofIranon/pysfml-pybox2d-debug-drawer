@@ -82,16 +82,20 @@ class sfDebugDraw:
 
 		end_point = center + radius * axis
 
-		line = [sf.Vertex(B2VectoSFVec(center), ColorToSFML(color)), sf.Vertex(B2VectoSFVec(end_point), ColorToSFML(color))]
+		line = sf.VertexArray(sf.PrimitiveTypes.Lines, 2)
+		line[0] = sf.Vertex(B2VectoSFVec(center), ColorToSFML(color))
+		line[1] = sf.Vertex(B2VectoSFVec(end_point), ColorToSFML(color))
 
 		self.window.draw(circle)
-		self.window.draw(line, 2, sf.Lines)
+		self.window.draw(line)
 
 	def DrawSegment(self, point_one, point_two, color):
 
-		line = [sf.Vertex(B2VectoSFVec(point_one), ColorToSFML(color)), sf.Vertex(B2VectoSFVec(point_two), ColorToSFML(color))]
+		line = sf.VertexArray(sf.PrimitiveTypes.Lines, 2)
+		line[0] = sf.Vertex(B2VectoSFVec(point_one), ColorToSFML(color))
+		line[1] = sf.Vertex(B2VectoSFVec(point_two), ColorToSFML(color))
 
-		window.draw(line, 2, sf.Lines)
+		window.draw(line)
 
 	def DrawTransform(self, transform):
 
@@ -100,9 +104,14 @@ class sfDebugDraw:
 		xAxis = transform.position + line_length * transform.R.Col1
 		yAxis = transform.position + line_length * transform.R.Col2
 
-		red_line = [(B2VectoSFVec(transform.position), sf.Color.RED), (B2VectoSFVec(xAxis), sf.Color.RED)]
-		green_line = [(B2VectoSFVec(transform.position), sf.Color.GREEN), (B2VectoSFVec(yAxis), sf.Color.GREEN)]
+		red_line = sf.VertexArray(sf.PrimitiveTypes.Lines, 2)
+		red_line[0] = sf.Vertex(B2VectoSFVec(transform.position), sf.Color.RED)
+		red_line[1] = sf.Vertex(B2VectoSFVec(xAxis), sf.Color.RED)
 
-		self.window.draw(red_line, 2, sf.Lines)
-		self.window.draw(gren_line, 2, sf.Lines)
+		green_line = sf.VertexArray(sf.PrimitiveTypes.Lines, 2)
+		green_line[0] = sf.Vertex(B2VectoSFVec(transform.position), sf.Color.GREEN)
+		green_line[1] = sf.Vertex(B2VectoSFVec(yAxis), sf.Color.GREEN)
+
+		self.window.draw(red_line)
+		self.window.draw(green_line)
 
