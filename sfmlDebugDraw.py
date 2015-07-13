@@ -1,43 +1,57 @@
-import sys
 from math import floor
-from random import *
 import sfml as sf
 import Box2D
-from Box2D import *
-from Box2D.b2 import *
+from Box2D import b2Draw, b2DrawExtended
 
-class sfDebugDraw:
-	SCALE = 32.0
+class sfDebugDraw(b2Draw):
 
-	def __init__(self, window):
+	def __init__(self, window, scale, **kwargs):
+		
+		super(sfDebugDraw, self).__init__()
 		self.window = window
+		self.scale = scale
 
+	def StartDraw(self):
+		self.window.clear(sf.Color.BLACK)
 
-	def ColorToSFML(self, color, alpha = 255):
-		return sf.Color((color.r * 255), (color.g * 255), (color.b * 255), alpha)
+	def EndDraw(self):
+		self.window.display()
 
-	def B2VectoSFVec(self, b2_vector, scale_to_pixels = True):
-		return sf.Vector(
-			b2_vector[0] * (self.SCALE if scale_to_pixels else 1),
-			b2_vector[1] * (self.SCALE if scale_to_pixels else 1)
-		)
+	def DrawAABB(self, aabb, color):
+		sfAABB = VertexArray(sf.graphics.PrimitiveType.LINES, 4)
+
+		sfAABB[0] = sf.Vertex(self.B2VectoSFVec(aabb.lowerBound.x, aabb.lowerBound.y), self.ColorToSFML(color))
+		sfAABB[1] = sf.Vertex(self.B2VectoSFVec(aabb.upperBound.x, aabb.lowerBound.y), self.ColorToSFML(color))
+		sfAABB[2] = sf.Vertex(self.B2VectoSFVec(aabb.upperBound.x, aabb.upperBound.y), self.ColorToSFML(color))
+		sfAABB[3] = sf.Vertex(self.B2VectoSFVec(aabb.lowerBound.x, aabb.upperBound.y), self.ColorToSFML(color))
+
+		self.window.draw(sfAABB)
+
+	def DrawPoint(self, p, size, color):
+
+		point = sf.CircleShape((size/2) * self.scale)
+		point.origin = ((size/2) * self.scale, (size/2) * self.scale)
+		point.position = self.B2VectoSFVec(p)
+		point.fill_color = self.ColorToSFML(color)
+		
+		self.window.draw(point)
 
 	def DrawPolygon(self, vertices, color):
 		
 		polygon = sf.ConvexShape()
-		
+
 		polygon.point_count = len(vertices)
-		
+
 		point_index = 0
 		for vertex in vertices:
-			trans_vector = B2VectoSFVec(vertex)
+			trans_vector = self.B2VectoSFVec(vertex)
 
 			polygon.set_point(point_index, (floor(trans_vector.x), floor(trans_vector.y)))
 			point_index = point_index + 1
 
 		polygon.outline_thickness = 1.0
 		polygon.fill_color = sf.Color.TRANSPARENT
-		polygon.outline_color = ColorToSFML(color)
+		polygon.outline_color = self.ColorToSFML(color)
 
 		self.window.draw(polygon)
 
@@ -49,69 +63,75 @@ class sfDebugDraw:
 		
 		point_index = 0
 		for vertex in vertices:
-			trans_vector = B2VectoSFVec(vertex)
+			trans_vector = self.B2VectoSFVec(vertex)
 
 			polygon.set_point(point_index, (floor(trans_vector.x), floor(trans_vector.y)))
 			point_index = point_index + 1
 
 		polygon.outline_thickness = 1.0
-		polygon.fill_color = ColorToSFML(color, 60)
-		polygon.outline_color = ColorToSFML(color)
+		polygon.fill_color = self.ColorToSFML(color, 60)
+		polygon.outline_color = self.ColorToSFML(color)
 
 		self.window.draw(polygon)
 
-	def DrawCircle(self, center, radius, color):
+	def DrawCircle(self, center, radius, color, drawwidth=1):
 
-		circle = sf.CircleShape(radius * SCALE)
-		circle.origin = radius * SCALE, radius * SCALE
-		circle.position = B2VectoSFVec(center)
+		circle = sf.CircleShape(radius * self.scale)
+		circle.origin = radius * self.scale, radius * SCALE
+		circle.position = self.B2VectoSFVec(center)
 		circle.fill_color = sf.COLOR.TRANSPARENT
-		circle.outline_thickness = 1.0
-		circle.outline_color = ColorToSFML(color)
+		circle.outline_thickness = drawwidth
+		circle.outline_color = self.ColorToSFML(color)
 
 		self.window.draw(circle)
 
 	def DrawSolidCircle(self, center, radius, axis, color):
 
-		circle = sf.CircleShape(radius * SCALE)
-		circle.origin = radius * SCALE, radius * SCALE
-		circle.position = B2VectoSFVec(center)
-		circle.fill_color = ColorToSFML(color, 60)
+		circle = sf.CircleShape(radius * self.scale)
+		circle.origin = radius * self.scale, radius * self.scale
+		circle.position = self.B2VectoSFVec(center)
+		circle.fill_color = self.ColorToSFML(color, 60)
 		circle.outline_thickness = 1.0
-		circle.outline_color = ColorToSFML(color)
+		circle.outline_color = self.ColorToSFML(color)
 
 		end_point = center + radius * axis
 
-		line = sf.VertexArray(sf.PrimitiveTypes.Lines, 2)
-		line[0] = sf.Vertex(B2VectoSFVec(center), ColorToSFML(color))
-		line[1] = sf.Vertex(B2VectoSFVec(end_point), ColorToSFML(color))
+		line = sf.VertexArray(sf.graphics.PrimitiveType.LINES, 2)
+		line[0] = sf.Vertex(self.B2VectoSFVec(center), self.ColorToSFML(color))
+		line[1] = sf.Vertex(self.B2VectoSFVec(end_point), self.ColorToSFML(color))
 
 		self.window.draw(circle)
 		self.window.draw(line)
 
-	def DrawSegment(self, point_one, point_two, color):
+	def DrawSegment(self, p1, p2, color):
 
-		line = sf.VertexArray(sf.PrimitiveTypes.Lines, 2)
-		line[0] = sf.Vertex(B2VectoSFVec(point_one), ColorToSFML(color))
-		line[1] = sf.Vertex(B2VectoSFVec(point_two), ColorToSFML(color))
+		line = sf.VertexArray(sf.graphics.PrimitiveType.LINES, 2)
+		line[0] = sf.Vertex(self.B2VectoSFVec(p1), self.ColorToSFML(color))
+		line[1] = sf.Vertex(self.B2VectoSFVec(p2), self.ColorToSFML(color))
 
-		window.draw(line)
+		self.window.draw(line)
 
-	def DrawTransform(self, transform):
+	def DrawTransform(self, xf):
 
 		line_length = 0.4
 
-		xAxis = transform.position + line_length * transform.R.Col1
-		yAxis = transform.position + line_length * transform.R.Col2
+		xAxis = xf.position + line_length * xf.R.Col1
+		yAxis = xf.position + line_length * xf.R.Col2
 
-		red_line = sf.VertexArray(sf.PrimitiveTypes.Lines, 2)
-		red_line[0] = sf.Vertex(B2VectoSFVec(transform.position), sf.Color.RED)
-		red_line[1] = sf.Vertex(B2VectoSFVec(xAxis), sf.Color.RED)
+		red_line = sf.VertexArray(sf.graphics.PrimitiveType.LINES, 2)
+		red_line[0] = sf.Vertex(self.B2VectoSFVec(xf.position), sf.Color.RED)
+		red_line[1] = sf.Vertex(self.B2VectoSFVec(xAxis), sf.Color.RED)
 
-		green_line = sf.VertexArray(sf.PrimitiveTypes.Lines, 2)
-		green_line[0] = sf.Vertex(B2VectoSFVec(transform.position), sf.Color.GREEN)
-		green_line[1] = sf.Vertex(B2VectoSFVec(yAxis), sf.Color.GREEN)
+		green_line = sf.VertexArray(sf.graphics.PrimitiveType.LINES, 2)
+		green_line[0] = sf.Vertex(self.B2VectoSFVec(xf.position), sf.Color.GREEN)
+		green_line[1] = sf.Vertex(self.B2VectoSFVec(yAxis), sf.Color.GREEN)
 
 		self.window.draw(red_line)
 		self.window.draw(green_line)
+
+	def ColorToSFML(self, color, alpha=255):
+		return sf.Color((color.r * 255), (color.g * 255), (color.b * 255), alpha)
+
+	def B2VectoSFVec(self, vector, scale_to_pixels=True):
+		return sf.Vector2(vector[0] * (self.scale if scale_to_pixels else 1), (vector[1] * (self.scale if scale_to_pixels else 1)))
 
