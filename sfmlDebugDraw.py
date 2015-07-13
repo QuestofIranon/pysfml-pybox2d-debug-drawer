@@ -8,9 +8,9 @@ from Box2D.b2 import *
 
 class sfDebugDraw:
 	SCALE = 32.0
-	window = None
 
-	def __init__(self, **kwargs):
+	def __init__(self, window):
+		self.window = window
 
 
 	def ColorToSFML(self, color, alpha = 255):
@@ -18,8 +18,8 @@ class sfDebugDraw:
 
 	def B2VectoSFVec(self, b2_vector, scale_to_pixels = True):
 		return sf.Vector(
-			b2_vector[0] * (if scale_to_pixels SCALE else 1),
-			b2_vector[1] * (if scale_to_pixels SCALE else 1)
+			b2_vector[0] * (self.SCALE if scale_to_pixels else 1),
+			b2_vector[1] * (self.SCALE if scale_to_pixels else 1)
 		)
 
 	def DrawPolygon(self, vertices, color):
