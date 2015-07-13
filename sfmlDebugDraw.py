@@ -1,8 +1,11 @@
 # pySFML Debug Draw for pyBox2d
 #
-# Copyright (C) 2015 "questofiranon" / https://github.com/QuestofIranon
+# Copyright (C) 2015 questofiranon / https://github.com/QuestofIranon
+#
 # Box2D C++ version Copyright (c) 2006-2007 Erin Catto http://www.gphysics.com
 # Box2D Python version Copyright (c) 2008 kne / sirkne at gmail dot com
+# 
+# Debug draw for Box2D 2.2.1 - 2.3.0 for SFML 2.0 - SFMLDebugDraw.cpp Copyright (C) 2013  Matija Lovrekovic
 #
 # This software is provided 'as-is', without any express or implied
 # warranty.  In no event will the authors be held liable for any damages
