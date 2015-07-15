@@ -37,11 +37,9 @@ class sfDebugDraw(b2Draw):
 		self.window = window
 		self.scale = scale
 
-	def StartDraw(self):
-		self.window.clear(sf.Color.BLACK)
+	def StartDraw(self): pass
 
-	def EndDraw(self):
-		self.window.display()
+	def EndDraw(self): pass
 
 	def DrawAABB(self, aabb, color):
 		sfAABB = VertexArray(sf.graphics.PrimitiveType.LINES, 4)
